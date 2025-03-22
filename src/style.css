@@ -400,6 +400,14 @@ tbody tr:nth-child(even) {
     display: block;
 }
 
+.note {
+    display: block;
+    color: var(--secondary-text);
+    font-size: 12px;
+    margin-top: 5px;
+    font-style: italic;
+}
+
 /* 多产品对比样式 */
 .multi-product-container {
     background-color: var(--card-bg);
@@ -463,14 +471,6 @@ tbody tr:nth-child(even) {
     color: var(--secondary-text);
     font-size: 13px;
     margin-bottom: 15px;
-}
-
-.note {
-    display: block;
-    color: var(--secondary-text);
-    font-size: 12px;
-    margin-top: 5px;
-    font-style: italic;
 }
 
 .setting-actions {
@@ -666,15 +666,20 @@ tbody tr:nth-child(even) {
     -webkit-overflow-scrolling: touch;
 }
 
+/* 新增样式 */
+.guaranteed-percent-container {
+    margin-top: 5px;
+}
+
 /* 响应式设计 - 手机和平板 */
 @media (max-width: 768px) {
     body {
-        padding: 10px;
+        padding: 15px;
         font-size: 16px;
     }
     
     .container {
-        padding: 15px;
+        padding: 20px;
         width: 100%;
         max-width: 100%;
     }
@@ -829,16 +834,22 @@ tbody tr:nth-child(even) {
         flex-direction: column;
         gap: 8px;
     }
+    
+    /* 增加边距 */
+    #tab1, #tab3 {
+        padding: 0 10px;
+    }
 }
 
 /* 小屏幕手机特殊调整 */
 @media (max-width: 480px) {
     body {
-        padding: 5px;
+        padding: 10px;
     }
     
     .container {
-        padding: 12px;
+        padding: 15px;
+        border-radius: 8px;
     }
     
     h1 {
@@ -887,5 +898,10 @@ tbody tr:nth-child(even) {
     th, td {
         padding: 8px 4px;
         font-size: 13px;
+    }
+    
+    /* 增加边距，防止内容贴近屏幕边缘 */
+    #tab1, #tab3 {
+        padding: 0 12px;
     }
 }

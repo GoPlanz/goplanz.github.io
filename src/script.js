@@ -55,7 +55,8 @@ function updateCurrencySymbols() {
     const currency = document.getElementById('currency').value;
     const symbol = currencySymbols[currency];
     document.getElementById('currency-symbol1').textContent = symbol;
-    document.getElementById('currency-symbol2').textContent = symbol;
+    document.getElementById('currency-symbol-g').textContent = symbol;
+    document.getElementById('currency-symbol-ng').textContent = symbol;
 }
 
 function updateCurrencySymbols3() {
@@ -71,8 +72,8 @@ function updateMultiCurrencySymbol(index) {
     
     const currencySelect = form.querySelector('.multi-currency');
     const currencySymbols = form.querySelectorAll('.multi-currency-symbol');
+    const symbol = currencySymbols[currencySelect.value] || '$';
     
-    const symbol = currencySymbols[currencySelect.value];
     currencySymbols.forEach(el => {
         el.textContent = symbol;
     });
@@ -165,11 +166,35 @@ function toggleMultiCommonPaymentType() {
     }
 }
 
+// 根据分红实现率调整退保金额 - 改进版，考虑累积影响
+function adjustAmountByRateCompound(guaranteedAmount, nonGuaranteedAmount, rate, years) {
+    // 保证部分不受分红实现率影响
+    if (rate === 100) {
+        return guaranteedAmount + nonGuaranteedAmount;
+    }
+    
+    // 调整非保证部分，考虑复利累积效应
+    // 使用sqrt(years)作为累积增长因子的权重，模拟复利效应随时间的增长
+    const adjustmentFactor = Math.pow(rate/100, Math.sqrt(years) * 0.6);
+    const adjustedNonGuaranteedPortion = nonGuaranteedAmount * adjustmentFactor;
+    
+    // 总退保金额 = 保证部分 + 调整后的非保证部分
+    return guaranteedAmount + adjustedNonGuaranteedPortion;
+}
+
+// 获取保证/非保证金额
+function getGuaranteedAmounts(totalAmount, guaranteedPercent) {
+    const guaranteedAmount = totalAmount * (guaranteedPercent / 100);
+    const nonGuaranteedAmount = totalAmount - guaranteedAmount;
+    return { guaranteedAmount, nonGuaranteedAmount };
+}
+
 // 应用共同设置到所有产品
 function applyCommonSettings() {
     const commonPremium = document.getElementById('multiCommonPremium').value;
     const commonPaymentType = document.getElementById('multiPaymentType').value;
     const commonPremiumYears = document.getElementById('multiCommonPremiumYears').value;
+    const commonGuaranteedPercent = document.getElementById('multiCommonGuaranteedPercent').value;
     
     // 遍历所有产品表单
     document.querySelectorAll('.product-form').forEach((form, index) => {
@@ -189,6 +214,11 @@ function applyCommonSettings() {
         if (commonPaymentType === 'multiple' && commonPremiumYears.trim() !== '') {
             form.querySelector('.multi-premium-years').value = commonPremiumYears;
         }
+        
+        // 应用保证部分比例
+        if (commonGuaranteedPercent.trim() !== '') {
+            form.querySelector('.multi-guaranteed-percent').value = commonGuaranteedPercent;
+        }
     });
     
     alert('共同设置已应用到所有产品！');
@@ -199,6 +229,7 @@ function resetCommonSettings() {
     document.getElementById('multiCommonPremium').value = '';
     document.getElementById('multiPaymentType').value = 'single';
     document.getElementById('multiCommonPremiumYears').value = '';
+    document.getElementById('multiCommonGuaranteedPercent').value = '60';
     
     // 隐藏分期付款年限
     document.getElementById('multiCommonPremiumYearsContainer').style.display = 'none';
@@ -271,20 +302,6 @@ function getTotalInvestment(premium, paymentType, premiumYears) {
     }
 }
 
-// 根据分红实现率调整退保金额
-function adjustAmountByRate(baseAmount, rate) {
-    // 假设分红部分占退保金额的40%（这是一个假设值，实际情况可能不同）
-    const guaranteedPortion = 0.6; // 保证部分占比
-    const dividendPortion = 0.4;   // 分红部分占比
-    
-    // 基础保证金额
-    const guaranteedAmount = baseAmount * guaranteedPortion;
-    // 分红金额按照实现率调整
-    const dividendAmount = baseAmount * dividendPortion * (rate / 100);
-    
-    return guaranteedAmount + dividendAmount;
-}
-
 // 获取分红实现率的CSS类名
 function getRateClass(rate) {
     if (rate === 105) return 'rate-105';
@@ -295,7 +312,7 @@ function getRateClass(rate) {
     return '';
 }
 
-// 计算不同分红实现率下的结果
+// 计算不同分红实现率下的结果 - 使用改进的分红实现率计算
 function calculateMultipleRates() {
     const company = document.getElementById('company').value;
     const productName = document.getElementById('productName').value;
@@ -304,7 +321,9 @@ function calculateMultipleRates() {
     const paymentType = document.getElementById('paymentType').value;
     const currency = document.getElementById('currency').value;
     const premium = parseFormattedNumber(document.getElementById('premium').value);
-    const baseAmount = parseFormattedNumber(document.getElementById('surrenderAmount').value);
+    let guaranteedAmount = parseFormattedNumber(document.getElementById('guaranteedAmount').value);
+    let nonGuaranteedAmount = parseFormattedNumber(document.getElementById('nonGuaranteedAmount').value);
+    const guaranteedPercent = parseInt(document.getElementById('guaranteedPercent').value) || 60;
     
     let premiumYears = 1; // 默认趸交
     if (paymentType === 'multiple') {
@@ -315,7 +334,7 @@ function calculateMultipleRates() {
         }
     }
     
-    if (!productName || isNaN(entryAge) || isNaN(surrenderYear) || isNaN(premium) || isNaN(baseAmount)) {
+    if (!productName || isNaN(entryAge) || isNaN(surrenderYear) || isNaN(premium)) {
         alert('请填写所有必填字段！');
         return;
     }
@@ -323,6 +342,20 @@ function calculateMultipleRates() {
     if (paymentType === 'multiple' && premiumYears > surrenderYear) {
         alert('交费年限不能大于保单持有年度！');
         return;
+    }
+    
+    // 如果用户没有输入保证/非保证金额分别，但输入了总金额，使用保证部分比例计算
+    const totalBaseAmount = guaranteedAmount + nonGuaranteedAmount;
+    if (totalBaseAmount === 0) {
+        alert('请输入退保金额(可以只输入总金额，系统将根据保证部分比例计算)');
+        return;
+    }
+    
+    // 如果用户只输入了总金额，根据保证比例拆分
+    if (guaranteedAmount === 0 && nonGuaranteedAmount === 0) {
+        const amounts = getGuaranteedAmounts(totalBaseAmount, guaranteedPercent);
+        guaranteedAmount = amounts.guaranteedAmount;
+        nonGuaranteedAmount = amounts.nonGuaranteedAmount;
     }
     
     // 计算退保年龄
@@ -337,8 +370,13 @@ function calculateMultipleRates() {
     
     // 为每个分红实现率计算结果
     for (const rate of rates) {
-        // 调整后的退保金额
-        const adjustedAmount = rate === 100 ? baseAmount : adjustAmountByRate(baseAmount, rate);
+        // 调整后的退保金额，使用改进的计算方法
+        const adjustedAmount = adjustAmountByRateCompound(
+            guaranteedAmount,
+            nonGuaranteedAmount,
+            rate,
+            surrenderYear
+        );
         
         // 准备现金流数据
         let cashflows = [];
@@ -377,6 +415,8 @@ function calculateMultipleRates() {
     document.getElementById('surrender-age').textContent = surrenderAge;
     document.getElementById('holding-years').textContent = surrenderYear;
     document.getElementById('total-premium').textContent = formatCurrency(totalInvestment, currency);
+    document.getElementById('guaranteed-value').textContent = formatCurrency(guaranteedAmount, currency);
+    document.getElementById('guaranteed-percent-result').textContent = Math.round((guaranteedAmount / (guaranteedAmount + nonGuaranteedAmount)) * 100) + '%';
     
     // 填充表格
     const tableBody = document.querySelector('#rates-table tbody');
@@ -398,7 +438,7 @@ function calculateMultipleRates() {
     document.getElementById('result1').style.display = 'block';
 }
 
-// 预测不同分红实现率下的退保金额
+// 预测不同分红实现率下的退保金额 - 使用改进的分红实现率计算
 function predictSurrenderAmounts() {
     const company = document.getElementById('company3').value;
     const productName = document.getElementById('productName3').value;
@@ -408,6 +448,7 @@ function predictSurrenderAmounts() {
     const currency = document.getElementById('currency3').value;
     const premium = parseFormattedNumber(document.getElementById('premium3').value);
     const targetIRR = parseFloat(document.getElementById('knownIRR').value) / 100;
+    const guaranteedPercent = parseInt(document.getElementById('guaranteedPercent3').value) || 60;
     
     let premiumYears = 1; // 默认趸交
     if (paymentType === 'multiple') {
@@ -447,14 +488,22 @@ function predictSurrenderAmounts() {
         }
     }
     
+    // 根据保证占比拆分保证和非保证部分
+    const { guaranteedAmount, nonGuaranteedAmount } = getGuaranteedAmounts(targetAmount, guaranteedPercent);
+    
     // 设置不同的分红实现率
     const rates = [105, 100, 95, 85, 75];
     const predictions = [];
     
     // 为每个分红实现率计算结果
     for (const rate of rates) {
-        // 根据分红实现率调整金额
-        const adjustedAmount = rate === 100 ? targetAmount : targetAmount * (0.6 + 0.4 * rate / 100);
+        // 使用改进的计算方法调整金额
+        const adjustedAmount = adjustAmountByRateCompound(
+            guaranteedAmount,
+            nonGuaranteedAmount,
+            rate,
+            surrenderYear
+        );
         
         // 计算APY
         const apy = calculateAPY(totalInvestment, adjustedAmount, surrenderYear);
@@ -478,6 +527,7 @@ function predictSurrenderAmounts() {
     document.getElementById('surrender-age3').textContent = surrenderAge;
     document.getElementById('holding-years3').textContent = surrenderYear;
     document.getElementById('total-premium3').textContent = formatCurrency(totalInvestment, currency);
+    document.getElementById('guaranteed-percent-result3').textContent = guaranteedPercent + '%';
     
     // 填充表格
     const tableBody = document.querySelector('#prediction-table tbody');
@@ -511,15 +561,30 @@ function getProductData(index) {
     const currency = form.querySelector('.multi-currency').value;
     const paymentType = form.querySelector('.multi-payment-type').value;
     const premium = parseFormattedNumber(form.querySelector('.multi-premium').value);
-    const surrenderAmount = parseFormattedNumber(form.querySelector('.multi-surrender-amount').value);
+    let guaranteedAmount = parseFormattedNumber(form.querySelector('.multi-guaranteed-amount').value);
+    let nonGuaranteedAmount = parseFormattedNumber(form.querySelector('.multi-non-guaranteed-amount').value);
+    let guaranteedPercent = parseInt(form.querySelector('.multi-guaranteed-percent').value) || 60;
     
     let premiumYears = 1;
     if (paymentType === 'multiple') {
         premiumYears = parseInt(form.querySelector('.multi-premium-years').value);
     }
     
-    if (!productName || isNaN(premium) || isNaN(surrenderAmount)) {
+    // 检查是否输入了有效数据
+    if (!productName || isNaN(premium) || (guaranteedAmount + nonGuaranteedAmount === 0)) {
         return null;
+    }
+    
+    // 如果用户只输入了总退保金额但没有细分保证和非保证部分
+    if (guaranteedAmount === 0 && nonGuaranteedAmount === 0) {
+        const totalAmount = parseFormattedNumber(form.querySelector('.multi-surrender-amount')?.value) || 0;
+        if (totalAmount > 0) {
+            const amounts = getGuaranteedAmounts(totalAmount, guaranteedPercent);
+            guaranteedAmount = amounts.guaranteedAmount;
+            nonGuaranteedAmount = amounts.nonGuaranteedAmount;
+        } else {
+            return null; // 无法计算
+        }
     }
     
     return {
@@ -530,7 +595,10 @@ function getProductData(index) {
         paymentType,
         premium,
         premiumYears,
-        surrenderAmount
+        guaranteedAmount,
+        nonGuaranteedAmount,
+        guaranteedPercent,
+        surrenderAmount: guaranteedAmount + nonGuaranteedAmount
     };
 }
 
@@ -554,10 +622,13 @@ function calculateProductResults(productData, entryAge, surrenderYear) {
     
     // 为每个分红实现率计算结果
     for (const rate of rates) {
-        // 调整后的退保金额
-        const adjustedAmount = rate === 100 
-            ? productData.surrenderAmount 
-            : adjustAmountByRate(productData.surrenderAmount, rate);
+        // 调整后的退保金额，使用改进的计算方法
+        const adjustedAmount = adjustAmountByRateCompound(
+            productData.guaranteedAmount,
+            productData.nonGuaranteedAmount,
+            rate,
+            surrenderYear
+        );
         
         // 准备现金流数据
         let cashflows = [];
@@ -586,6 +657,7 @@ function calculateProductResults(productData, entryAge, surrenderYear) {
     }
     
     results.totalInvestment = totalInvestment;
+    results.guaranteedPercent = productData.guaranteedPercent;
     
     return results;
 }
@@ -699,6 +771,10 @@ function updateComparisonView() {
                 <div class="card-premium">
                     <div class="card-label">保费投入</div>
                     <div class="card-value">${formatCurrency(product.results.totalInvestment, product.currency)}</div>
+                </div>
+                <div class="card-guarantee">
+                    <div class="card-label">保证占比</div>
+                    <div class="card-value">${product.guaranteedPercent}%</div>
                 </div>
                 <div class="card-result">
                     <div class="card-label">退保金额 (${selectedRate}%实现率)</div>
@@ -855,7 +931,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (sourceForm && targetForm) {
             targetForm.innerHTML = sourceForm.innerHTML;
             
-            // 更新第二表单中的事件处理程序
+            // 更新表单中的事件处理程序
             const paymentTypeSelect = targetForm.querySelector('.multi-payment-type');
             if (paymentTypeSelect) {
                 paymentTypeSelect.setAttribute('onchange', `toggleMultiPaymentType(${i})`);
