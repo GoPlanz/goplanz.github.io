@@ -1,3 +1,14 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>🇭🇰储蓄寿险收益分析</title>
+  <link rel="stylesheet" href="./style.css">
+
+</head>
+<body>
+<!-- partial:index.partial.html -->
 <div class="container">
     <h1>🇭🇰储蓄寿险收益分析</h1>
     
@@ -96,7 +107,7 @@
         
         <button onclick="calculateMultipleRates()">计算不同分红实现率结果</button>
         
-        <div id="result1" class="result-table" style="display:none;">
+        <div id="result1" class="result-table table-container" style="display:none;">
             <h3>计算结果</h3>
             <div class="product-info">
                 <div class="product-header">
@@ -111,19 +122,21 @@
                 <p><strong>总投入保费:</strong> <span id="total-premium"></span></p>
             </div>
             
-            <table id="rates-table">
-                <thead>
-                    <tr>
-                        <th>分红实现率</th>
-                        <th>退保金额</th>
-                        <th>复利IRR</th>
-                        <th>单利APY</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- 这里将由JavaScript填充 -->
-                </tbody>
-            </table>
+            <div class="table-scroll-container">
+                <table id="rates-table">
+                    <thead>
+                        <tr>
+                            <th>分红实现率</th>
+                            <th>退保金额</th>
+                            <th>复利IRR</th>
+                            <th>单利APY</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- 这里将由JavaScript填充 -->
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
     
@@ -285,7 +298,7 @@
             <button onclick="compareProducts()">对比分析产品</button>
         </div>
         
-        <div id="compareResult" class="result-table" style="display:none;">
+        <div id="compareResult" class="result-table table-container" style="display:none;">
             <h3>产品对比结果</h3>
             
             <div class="comparison-summary">
@@ -320,7 +333,7 @@
                     <button class="tab-button" onclick="showComparisonTab('apy')">APY对比</button>
                 </div>
                 
-                <div class="comparison-tab-content" id="amounts-tab">
+                <div class="comparison-tab-content table-scroll-container" id="amounts-tab">
                     <table class="comparison-table">
                         <thead>
                             <tr>
@@ -338,7 +351,7 @@
                     </table>
                 </div>
                 
-                <div class="comparison-tab-content" id="irr-tab" style="display:none;">
+                <div class="comparison-tab-content table-scroll-container" id="irr-tab" style="display:none;">
                     <table class="comparison-table">
                         <thead>
                             <tr>
@@ -356,7 +369,7 @@
                     </table>
                 </div>
                 
-                <div class="comparison-tab-content" id="apy-tab" style="display:none;">
+                <div class="comparison-tab-content table-scroll-container" id="apy-tab" style="display:none;">
                     <table class="comparison-table">
                         <thead>
                             <tr>
@@ -462,7 +475,7 @@
         
         <button onclick="predictSurrenderAmounts()">预测不同分红实现率结果</button>
         
-        <div id="result3" class="result-table" style="display:none;">
+        <div id="result3" class="result-table table-container" style="display:none;">
             <h3>预测结果</h3>
             <div class="product-info">
                 <div class="product-header">
@@ -477,19 +490,21 @@
                 <p><strong>总投入保费:</strong> <span id="total-premium3"></span></p>
             </div>
             
-            <table id="prediction-table">
-                <thead>
-                    <tr>
-                        <th>分红实现率</th>
-                        <th>预计退保金额</th>
-                        <th>单利APY</th>
-                        <th>实现该金额所需年化分红率</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- 这里将由JavaScript填充 -->
-                </tbody>
-            </table>
+            <div class="table-scroll-container">
+                <table id="prediction-table">
+                    <thead>
+                        <tr>
+                            <th>分红实现率</th>
+                            <th>预计退保金额</th>
+                            <th>单利APY</th>
+                            <th>实现该金额所需年化分红率</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- 这里将由JavaScript填充 -->
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
     
@@ -501,3 +516,8 @@
         <p><strong>APY (年化收益率):</strong> 单利计算方式，表示每年平均收益率，计算公式为：<code>(终值/总投入 - 1) / 持有年数 × 100%</code></p>
     </div>
 </div>
+<!-- partial -->
+  <script  src="./script.js"></script>
+
+</body>
+</html>

@@ -299,6 +299,12 @@ button:active {
     color: var(--text-color);
 }
 
+.table-scroll-container {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
 table {
     width: 100%;
     border-collapse: collapse;
@@ -654,53 +660,232 @@ tbody tr:nth-child(even) {
     font-size: 12px;
 }
 
+.table-container {
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* 响应式设计 - 手机和平板 */
 @media (max-width: 768px) {
+    body {
+        padding: 10px;
+        font-size: 16px;
+    }
+    
     .container {
-        padding: 20px;
+        padding: 15px;
+        width: 100%;
+        max-width: 100%;
     }
     
     h1 {
-        font-size: 22px;
+        font-size: 20px;
+        margin-bottom: 15px;
+    }
+    
+    h2 {
+        font-size: 18px;
+    }
+    
+    .tabs {
+        gap: 5px;
+        margin-bottom: 20px;
+    }
+    
+    .tab {
+        padding: 10px 5px;
+        font-size: 14px;
+    }
+    
+    .form-row {
+        flex-direction: column;
+        gap: 15px;
+        margin-bottom: 15px;
+    }
+    
+    label {
+        font-size: 16px;
+        margin-bottom: 6px;
     }
     
     input[type="number"], 
     input[type="text"], 
     select {
-        font-size: 15px;
+        padding: 12px;
+        font-size: 16px;
     }
     
-    .form-row {
-        flex-direction: column;
-        gap: 20px;
+    .input-with-prefix input {
+        padding-left: 28px;
+    }
+    
+    button {
+        padding: 14px;
+        font-size: 16px;
     }
     
     .result-info {
         grid-template-columns: 1fr;
+        gap: 8px;
+        padding: 12px;
+    }
+    
+    .result-info p {
+        font-size: 15px;
     }
     
     table {
-        font-size: 13px;
+        font-size: 14px;
     }
     
     th, td {
-        padding: 10px 8px;
+        padding: 10px 6px;
     }
     
-    .explanation {
-        margin-top: 40px;
-        padding: 15px;
+    /* 产品对比部分 */
+    .product-tabs {
+        flex-wrap: wrap;
+    }
+    
+    .product-tab {
+        flex: 1;
+        min-width: 40%;
+        text-align: center;
     }
     
     .comparison-cards {
         grid-template-columns: 1fr;
     }
     
-    .comparison-summary {
-        flex-direction: column;
-        gap: 10px;
+    .comparison-card {
+        margin-bottom: 15px;
+    }
+    
+    .card-header {
+        padding: 10px;
+    }
+    
+    .card-company, .card-product {
+        font-size: 15px;
+    }
+    
+    .card-body {
+        padding: 12px;
+    }
+    
+    .tab-buttons {
+        flex-wrap: wrap;
+    }
+    
+    .tab-button {
+        padding: 8px;
+        font-size: 14px;
+        flex: 1;
+        min-width: 45%;
     }
     
     .setting-actions {
         flex-direction: column;
+        gap: 10px;
+    }
+    
+    .setting-actions button {
+        width: 100%;
+    }
+    
+    /* 表格滚动处理 */
+    .result-table {
+        overflow-x: auto;
+    }
+    
+    /* 使表格在手机上可以滚动 */
+    .comparison-table, #rates-table, #prediction-table {
+        min-width: 500px;
+    }
+    
+    /* 适配多产品对比视图 */
+    .detailed-comparison {
+        overflow-x: auto;
+    }
+    
+    /* 调整分红实现率选择器在移动设备上的显示 */
+    .rate-selector {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .rate-selector select {
+        width: 100%;
+    }
+    
+    /* 改善比较卡片在手机上的显示 */
+    .comparison-cards {
+        margin: 15px 0;
+    }
+    
+    /* 调整对比摘要信息在移动设备上的显示 */
+    .comparison-summary {
+        flex-direction: column;
+        gap: 8px;
+    }
+}
+
+/* 小屏幕手机特殊调整 */
+@media (max-width: 480px) {
+    body {
+        padding: 5px;
+    }
+    
+    .container {
+        padding: 12px;
+    }
+    
+    h1 {
+        font-size: 18px;
+    }
+    
+    h2 {
+        font-size: 16px;
+    }
+    
+    .tab {
+        font-size: 13px;
+        padding: 8px 4px;
+    }
+    
+    input[type="number"], 
+    input[type="text"], 
+    select {
+        font-size: 16px;
+        padding: 10px;
+    }
+    
+    label {
+        font-size: 15px;
+    }
+    
+    button {
+        padding: 12px;
+        font-size: 15px;
+    }
+    
+    .explanation p {
+        font-size: 13px;
+    }
+    
+    /* 使货币符号和输入不重叠 */
+    .currency-symbol {
+        left: 10px;
+    }
+    
+    .input-with-prefix input {
+        padding-left: 25px;
+    }
+    
+    /* 增强小屏幕上表格的可读性 */
+    th, td {
+        padding: 8px 4px;
+        font-size: 13px;
     }
 }
