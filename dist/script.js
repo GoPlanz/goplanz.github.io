@@ -798,6 +798,31 @@ function showComparisonTab(tabName) {
     document.querySelector(`.tab-button[onclick="showComparisonTab('${tabName}')"]`).classList.add('active');
 }
 
+// 检测移动设备并调整UI
+function adjustForMobileDevices() {
+    const isMobile = window.innerWidth <= 768;
+    
+    if (isMobile) {
+        // 根据需要动态调整表格和其他元素
+        document.querySelectorAll('table').forEach(table => {
+            if (table.parentElement) {
+                table.parentElement.style.overflowX = 'auto';
+                table.parentElement.style.webkitOverflowScrolling = 'touch';
+            }
+        });
+        
+        // 调整输入框字体大小，确保在iOS上显示正常
+        document.querySelectorAll('input, select').forEach(input => {
+            input.style.fontSize = '16px';
+        });
+        
+        // 确保表格容器允许滚动
+        document.querySelectorAll('.table-scroll-container').forEach(container => {
+            container.style.overflowX = 'auto';
+        });
+    }
+}
+
 // 初始化页面
 document.addEventListener('DOMContentLoaded', function() {
     // 初始化交费方式选择器状态
@@ -845,4 +870,10 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 初始只显示第一个产品表单
     switchProductForm(0);
+    
+    // 调用移动设备适配函数
+    adjustForMobileDevices();
+    
+    // 添加窗口大小变化时的处理
+    window.addEventListener('resize', adjustForMobileDevices);
 });
